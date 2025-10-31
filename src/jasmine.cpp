@@ -20,10 +20,10 @@ namespace jasmine::settings {
     }
 }
 
-Hook* jasmine::hook::get(std::map<std::string, std::shared_ptr<Hook>>& hooks, std::string_view key, bool enabled) {
+Hook* jasmine::hook::get(std::map<std::string, std::shared_ptr<Hook>>& hooks, std::string_view name, bool enabled) {
     if (hooks.empty()) return nullptr;
 
-    auto it = hooks.find(std::string(key));
+    auto it = hooks.find(std::string(name));
     if (it == hooks.end()) return nullptr;
 
     auto hook = it->second.get();
@@ -34,9 +34,9 @@ Hook* jasmine::hook::get(std::map<std::string, std::shared_ptr<Hook>>& hooks, st
 void jasmine::hook::modify(std::map<std::string, std::shared_ptr<Hook>>& hooks, std::string_view key) {
     if (hooks.empty()) return;
 
-    auto dynamicObjectInfo = setting::getValue<bool>(key);
+    auto value = setting::getValue<bool>(key);
     for (auto& hook : std::views::values(hooks)) {
-        hook->setAutoEnable(dynamicObjectInfo);
+        hook->setAutoEnable(value);
     }
 
     new EventListener([hooks](std::shared_ptr<SettingV3> setting) {
@@ -44,6 +44,16 @@ void jasmine::hook::modify(std::map<std::string, std::shared_ptr<Hook>>& hooks, 
         for (auto& hook : std::views::values(hooks)) {
             toggle(hook.get(), value);
         }
+    }, SettingChangedFilterV3(Mod::get(), std::string(key)));
+}
+
+void jasmine::hook::modify(std::map<std::string, std::shared_ptr<Hook>>& hooks, std::string_view name, std::string_view key) {
+    auto hook = get(hooks, name, setting::getValue<bool>(key));
+    if (!hook) return;
+
+    new EventListener([hook](std::shared_ptr<SettingV3> setting) {
+        auto value = std::static_pointer_cast<BoolSettingV3>(std::move(setting))->getValue();
+        toggle(hook, value);
     }, SettingChangedFilterV3(Mod::get(), std::string(key)));
 }
 
