@@ -12,9 +12,9 @@ namespace jasmine::convert {
     }
 
     template <std::integral T>
-    std::pair<T, bool> getInt(std::string_view str) {
+    std::optional<T> getInt(std::string_view str) {
         T value = {};
-        return std::make_pair(value, toInt(str, value));
+        return toInt(str, value) ? std::make_optional(value) : std::nullopt;
     }
 
     template <std::floating_point T>
@@ -31,8 +31,8 @@ namespace jasmine::convert {
     }
 
     template <std::floating_point T>
-    std::pair<T, bool> getFloat(std::string_view str) {
+    std::optional<T> getFloat(std::string_view str) {
         T value = {};
-        return std::make_pair(value, toFloat(str, value));
+        return toFloat(str, value) ? std::make_optional(value) : std::nullopt;
     }
 }

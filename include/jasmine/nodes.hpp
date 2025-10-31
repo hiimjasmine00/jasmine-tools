@@ -1,3 +1,4 @@
+#pragma once
 #include <Geode/utils/cocos.hpp>
 
 namespace jasmine::nodes {
