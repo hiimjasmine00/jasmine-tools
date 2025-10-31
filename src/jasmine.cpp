@@ -44,7 +44,7 @@ void jasmine::hook::modify(std::map<std::string, std::shared_ptr<Hook>>& hooks, 
         for (auto& hook : std::views::values(hooks)) {
             toggle(hook.get(), value);
         }
-    }, SettingChangedFilterV3(GEODE_MOD_ID, std::string(key)));
+    }, SettingChangedFilterV3(Mod::get(), std::string(key)));
 }
 
 void jasmine::hook::toggle(Hook* hook, bool enable) {
@@ -89,6 +89,23 @@ std::vector<matjson::Value> jasmine::web::getArray(utils::web::WebResponse* resp
 
 std::string jasmine::web::getString(utils::web::WebResponse* response) {
     return std::string(std::from_range, response->data());
+}
+
+ButtonHooker* ButtonHooker::create(CCMenuItem* button, CCObject* listener, SEL_MenuHandler selector) {
+    if (!button) return nullptr;
+    auto hooker = new ButtonHooker();
+    hooker->m_listener = button->m_pListener;
+    hooker->m_selector = button->m_pfnSelector;
+    button->setTarget(listener, selector);
+    button->setUserObject(fmt::format("{}/hooker", Mod::get()->getID()), hooker);
+    hooker->autorelease();
+    return hooker;
+}
+
+void ButtonHooker::call(CCObject* button) {
+    if (auto hooker = static_cast<ButtonHooker*>(static_cast<CCNode*>(button)->getUserObject(fmt::format("{}/hooker", Mod::get()->getID())))) {
+        (hooker->m_listener->*hooker->m_selector)(button);
+    }
 }
 
 TableNode* TableNode::create(int columns, int rows, float width, float height, std::string_view prefix) {
