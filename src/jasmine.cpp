@@ -91,23 +91,6 @@ std::string jasmine::web::getString(utils::web::WebResponse* response) {
     return std::string(std::from_range, response->data());
 }
 
-ButtonHooker* ButtonHooker::create(CCMenuItem* button, CCObject* listener, SEL_MenuHandler selector) {
-    if (!button) return nullptr;
-    auto hooker = new ButtonHooker();
-    hooker->m_listener = button->m_pListener;
-    hooker->m_selector = button->m_pfnSelector;
-    button->setTarget(listener, selector);
-    button->setUserObject("hooker"_spr, hooker);
-    hooker->autorelease();
-    return hooker;
-}
-
-void ButtonHooker::call(CCObject* button) {
-    if (auto hooker = static_cast<ButtonHooker*>(static_cast<CCNode*>(button)->getUserObject("hooker"_spr))) {
-        (hooker->m_listener->*hooker->m_selector)(button);
-    }
-}
-
 TableNode* TableNode::create(int columns, int rows, float width, float height, std::string_view prefix) {
     auto ret = new TableNode();
     if (ret->init(columns, rows, width, height, prefix)) {
@@ -140,7 +123,7 @@ bool TableNode::init(int columns, int rows, float width, float height, std::stri
 }
 
 void TableNode::addButton(CCMenuItem* button) {
-    static_cast<CCNode*>(m_menus->objectAtIndex(m_buttons++ % m_columns))->addChild(button);
+    if (button) static_cast<CCNode*>(m_menus->objectAtIndex(m_buttons++ % m_columns))->addChild(button);
 }
 
 void TableNode::updateAllLayouts() {
