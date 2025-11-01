@@ -139,7 +139,7 @@ bool TableNode::init(int columns, int rows, float width, float height, std::stri
 
     for (int i = 0; i < rows; i++) {
         auto menu = CCNode::create();
-        menu->setContentSize({ width, height });
+        menu->setContentSize({ width, height / rows });
         menu->setLayout(RowLayout::create()->setAxisAlignment(AxisAlignment::Even));
         menu->setID(fmt::format("{}-{}", prefix, i + 1));
         addChild(menu);
