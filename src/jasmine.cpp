@@ -1,6 +1,7 @@
 #include <Geode/loader/Mod.hpp>
 #include <Geode/loader/ModSettingsManager.hpp>
 #include <jasmine.hpp>
+#include <random>
 #include <ranges>
 
 using namespace geode::prelude;
@@ -74,12 +75,17 @@ void jasmine::hook::toggle(Hook* hook, bool enable) {
     }
 }
 
+double jasmine::random::get() {
+    return (double)rand() / (double)RAND_MAX;
+}
+
 bool jasmine::random::getBool() {
     return getInt(0, 1) == 1;
 }
 
-double jasmine::random::get() {
-    return (double)rand() / (double)RAND_MAX;
+int jasmine::random::getInt(int min, int max) {
+    static std::mt19937 rng(std::random_device{}());
+    return std::uniform_int_distribution<int>(min, max)(rng);
 }
 
 const char* jasmine::search::getKey(GJSearchObject* object) {
