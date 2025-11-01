@@ -1,4 +1,5 @@
 #include <Geode/loader/Mod.hpp>
+#include <Geode/loader/ModSettingsManager.hpp>
 #include <jasmine.hpp>
 #include <ranges>
 
@@ -11,8 +12,9 @@ namespace jasmine::settings {
         static std::unordered_map<std::string, SettingV3*>* settings = [] {
             auto settings = new std::unordered_map<std::string, SettingV3*>();
             auto mod = Mod::get();
+            auto manager = ModSettingsManager::from(mod);
             for (auto& key : mod->getSettingKeys()) {
-                settings->emplace(std::move(key), mod->getSetting(key).get());
+                settings->emplace(std::move(key), manager->get(key).get());
             }
             return settings;
         }();
@@ -70,6 +72,14 @@ void jasmine::hook::toggle(Hook* hook, bool enable) {
             log::error("Failed to disable {} hook: {}", hook->getDisplayName(), std::move(res).unwrapErr());
         }
     }
+}
+
+bool jasmine::random::getBool() {
+    return getInt(0, 1) == 1;
+}
+
+double jasmine::random::get() {
+    return (double)rand() / (double)RAND_MAX;
 }
 
 const char* jasmine::search::getKey(GJSearchObject* object) {
