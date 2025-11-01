@@ -6,4 +6,5 @@
 #include <jasmine/random.hpp>
 #include <jasmine/search.hpp>
 #include <jasmine/setting.hpp>
+#include <jasmine/string.hpp>
 #include <jasmine/web.hpp>

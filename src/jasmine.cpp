@@ -99,6 +99,32 @@ SettingV3* jasmine::setting::getInternal(std::string_view key) {
     return nullptr;
 }
 
+std::vector<std::string_view> jasmine::string::split(std::string_view str, char delimiter) {
+    std::vector<std::string_view> result;
+    auto start = 0uz;
+    auto end = str.find(delimiter);
+    while (end != std::string_view::npos) {
+        result.push_back(str.substr(start, end - start));
+        start = end + 1;
+        end = str.find(delimiter, start);
+    }
+    result.push_back(str.substr(start));
+    return result;
+}
+
+std::vector<std::string_view> jasmine::string::split(std::string_view str, std::string_view delimiter) {
+    std::vector<std::string_view> result;
+    auto start = 0uz;
+    auto end = str.find(delimiter);
+    while (end != std::string_view::npos) {
+        result.push_back(str.substr(start, end - start));
+        start = end + delimiter.size();
+        end = str.find(delimiter, start);
+    }
+    result.push_back(str.substr(start));
+    return result;
+}
+
 std::vector<matjson::Value> jasmine::web::getArray(utils::web::WebResponse* response, std::string_view key) {
     if (auto json = response->json()) {
         if (key.data()) {
