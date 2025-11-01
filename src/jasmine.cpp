@@ -44,7 +44,7 @@ void jasmine::hook::modify(std::map<std::string, std::shared_ptr<Hook>>& hooks, 
         for (auto& hook : std::views::values(hooks)) {
             toggle(hook.get(), value);
         }
-    }, SettingChangedFilterV3(Mod::get(), std::string(key)));
+    }, SettingChangedFilterV3(GEODE_MOD_ID, std::string(key)));
 }
 
 void jasmine::hook::modify(std::map<std::string, std::shared_ptr<Hook>>& hooks, std::string_view name, std::string_view key) {
@@ -54,7 +54,7 @@ void jasmine::hook::modify(std::map<std::string, std::shared_ptr<Hook>>& hooks, 
     new EventListener([hook](std::shared_ptr<SettingV3> setting) {
         auto value = std::static_pointer_cast<BoolSettingV3>(std::move(setting))->getValue();
         toggle(hook, value);
-    }, SettingChangedFilterV3(Mod::get(), std::string(key)));
+    }, SettingChangedFilterV3(GEODE_MOD_ID, std::string(key)));
 }
 
 void jasmine::hook::toggle(Hook* hook, bool enable) {
@@ -107,13 +107,13 @@ ButtonHooker* ButtonHooker::create(CCMenuItem* button, CCObject* listener, SEL_M
     hooker->m_listener = button->m_pListener;
     hooker->m_selector = button->m_pfnSelector;
     button->setTarget(listener, selector);
-    button->setUserObject(fmt::format("{}/hooker", Mod::get()->getID()), hooker);
+    button->setUserObject("hooker"_spr, hooker);
     hooker->autorelease();
     return hooker;
 }
 
 void ButtonHooker::call(CCObject* button) {
-    if (auto hooker = static_cast<ButtonHooker*>(static_cast<CCNode*>(button)->getUserObject(fmt::format("{}/hooker", Mod::get()->getID())))) {
+    if (auto hooker = static_cast<ButtonHooker*>(static_cast<CCNode*>(button)->getUserObject("hooker"_spr))) {
         (hooker->m_listener->*hooker->m_selector)(button);
     }
 }
