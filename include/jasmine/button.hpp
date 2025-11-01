@@ -3,6 +3,7 @@
 
 namespace jasmine::button {
     class ButtonHooker : public cocos2d::CCObject {
+    public:
         cocos2d::CCObject* m_listener;
         cocos2d::SEL_MenuHandler m_selector;
 
