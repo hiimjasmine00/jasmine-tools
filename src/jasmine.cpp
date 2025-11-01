@@ -135,7 +135,7 @@ bool TableNode::init(int columns, int rows, float width, float height, std::stri
     setContentSize({ width, height });
 
     m_menus = CCArray::create();
-    m_columns = columns;
+    m_rows = rows;
 
     for (int i = 0; i < rows; i++) {
         auto menu = CCNode::create();
@@ -152,7 +152,7 @@ bool TableNode::init(int columns, int rows, float width, float height, std::stri
 }
 
 void TableNode::addButton(CCMenuItem* button) {
-    if (button) static_cast<CCNode*>(m_menus->objectAtIndex(m_buttons++ % m_columns))->addChild(button);
+    if (button) static_cast<CCNode*>(m_menus->objectAtIndex(m_buttons++ % m_rows))->addChild(button);
 }
 
 void TableNode::updateAllLayouts() {
