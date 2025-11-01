@@ -146,6 +146,8 @@ bool TableNode::init(int columns, int rows, float width, float height, std::stri
         m_menus->addObject(menu);
     }
 
+    setLayout(ColumnLayout::create()->setAxisReverse(true));
+
     return true;
 }
 
