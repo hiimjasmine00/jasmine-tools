@@ -11,9 +11,7 @@ namespace jasmine::setting {
 
     template <class T>
     T getValue(std::string_view key) {
-        if (auto setting = get<T>(key)) {
-            if (setting->shouldEnable()) return setting->getValue();
-        }
+        if (auto setting = get<T>(key)) return setting->getValue();
         return {};
     }
 }
