@@ -152,7 +152,7 @@ bool TableNode::init(int columns, int rows, float width, float height, std::stri
 }
 
 void TableNode::addButton(CCMenuItem* button) {
-    if (button) static_cast<CCNode*>(m_menus->objectAtIndex(m_buttons++ % m_rows))->addChild(button);
+    if (button) static_cast<CCNode*>(m_menus->objectAtIndex(m_buttons++ / m_rows))->addChild(button);
 }
 
 void TableNode::updateAllLayouts() {
