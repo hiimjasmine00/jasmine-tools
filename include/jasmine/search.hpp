@@ -6,12 +6,12 @@ namespace jasmine::search {
     requires std::is_invocable_r_v<std::string, Func, typename std::iterator_traits<It>::value_type>
     GJSearchObject* getObject(It begin, Sent end, Func func = {}) {
         auto obj = GJSearchObject::create(SearchType::Type19);
-        std::string searchQuery;
+        fmt::memory_buffer searchQuery;
         for (auto it = begin; it < end; ++it) {
-            if (it != begin) searchQuery += ',';
-            searchQuery += std::invoke(func, *it);
+            if (it != begin) searchQuery.push_back(',');
+            fmt::format_to(std::back_inserter(searchQuery), "{}", std::invoke(func, *it));
         }
-        obj->m_searchQuery = searchQuery;
+        obj->m_searchQuery = fmt::to_string(searchQuery);
         return obj;
     }
 
