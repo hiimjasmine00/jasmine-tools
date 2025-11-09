@@ -1,5 +1,5 @@
 #pragma once
-#include <cocos2d.h>
+#include <Geode/cocos/menu_nodes/CCMenuItem.h>
 
 namespace jasmine::button {
     class ButtonHooker : public cocos2d::CCObject {

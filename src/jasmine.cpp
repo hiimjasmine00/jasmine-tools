@@ -1,3 +1,7 @@
+#include <Geode/binding/GJGameLevel.hpp>
+#ifdef GEODE_IS_ANDROID
+#include <Geode/binding/GJMoreGamesLayer.hpp>
+#endif
 #include <Geode/loader/Mod.hpp>
 #include <Geode/loader/ModSettingsManager.hpp>
 #include <jasmine.hpp>
@@ -20,6 +24,60 @@ namespace jasmine::settings {
             return settings;
         }();
         return settings;
+    }
+}
+
+struct GetCurrentServerEvent : Event {
+    GetCurrentServerEvent() {}
+
+    int m_id = 0;
+    std::string m_url;
+    int m_prio = 0;
+};
+
+std::string jasmine::gdps::getURL() {
+    static_assert(GEODE_COMP_GD_VERSION == 22074, "Incompatible GD version for jasmine::gdps::getURL");
+
+    static std::string url = [] {
+        if (Loader::get()->isModLoaded("km7dev.server_api")) {
+            GetCurrentServerEvent event;
+            event.post();
+            auto url = std::move(event.m_url);
+            if (!url.empty() && url != "NONE_REGISTERED") {
+                while (url.ends_with('/')) url = url.substr(0, url.size() - 1);
+                return url;
+            }
+        }
+
+        return std::string(reinterpret_cast<const char*>(base::get() +
+            GEODE_WINDOWS(0x53ea48)
+            GEODE_ARM_MAC(0x7749fb)
+            GEODE_INTEL_MAC(0x8516bf)
+            GEODE_ANDROID64((((GJMoreGamesLayer* volatile)nullptr)->getMoreGamesList()->count() > 0 ? 0xea2988 : 0xea27f8))
+            GEODE_ANDROID32((((GJMoreGamesLayer* volatile)nullptr)->getMoreGamesList()->count() > 0 ? 0x952e9e : 0x952cce))
+            GEODE_IOS(0x6af51a)
+        ), 0, 34);
+    }();
+    return url;
+}
+
+bool jasmine::gdps::isActive() {
+    static bool isActive = getURL().rfind("://www.boomlings.com/database") != std::string::npos;
+    return isActive;
+}
+
+Hook* jasmine::hook::createInternal(
+    uintptr_t address, std::string_view name, void* detour, const tulip::hook::HandlerMetadata& metadata, std::function<void(geode::Hook*)> preClaim
+) {
+    auto hook = Hook::create(reinterpret_cast<void*>(address), detour, std::string(name), metadata, {});
+
+    if (preClaim) preClaim(hook.get());
+
+    auto res = Mod::get()->claimHook(hook);
+    if (res.isOk()) return res.unwrap();
+    else {
+        if (res.isErr()) log::error("Failed to claim hook {}: {}", name, res.unwrapErr());
+        return nullptr;
     }
 }
 
@@ -65,18 +123,29 @@ void jasmine::hook::toggle(Hook* hook, bool enable) {
 
     if (enable) {
         if (auto res = hook->enable(); res.isErr()) {
-            log::error("Failed to enable {} hook: {}", hook->getDisplayName(), std::move(res).unwrapErr());
+            log::error("Failed to enable {} hook: {}", hook->getDisplayName(), res.unwrapErr());
         }
     }
     else {
         if (auto res = hook->disable(); res.isErr()) {
-            log::error("Failed to disable {} hook: {}", hook->getDisplayName(), std::move(res).unwrapErr());
+            log::error("Failed to disable {} hook: {}", hook->getDisplayName(), res.unwrapErr());
         }
     }
 }
 
+int jasmine::level::getDifficulty(GJGameLevel* level) {
+    if (!level) return 0;
+    if (level->m_demon > 0) return GJGameLevel::demonIconForDifficulty((DemonDifficultyType)level->m_demonDifficulty);
+    else if (level->m_autoLevel) return -1;
+    else return level->getAverageDifficulty();
+}
+
 double jasmine::random::get() {
     return (double)rand() / (double)RAND_MAX;
+}
+
+double jasmine::random::get(double min, double max) {
+    return get() * (max - min) + min;
 }
 
 bool jasmine::random::getBool() {
@@ -102,11 +171,9 @@ SettingV3* jasmine::setting::getInternal(std::string_view key) {
 std::vector<std::string_view> jasmine::string::split(std::string_view str, char delimiter) {
     std::vector<std::string_view> result;
     auto start = 0uz;
-    auto end = str.find(delimiter);
-    while (end != std::string_view::npos) {
+    for (auto end = str.find(delimiter); end != std::string_view::npos; end = str.find(delimiter, start)) {
         result.push_back(str.substr(start, end - start));
         start = end + 1;
-        end = str.find(delimiter, start);
     }
     result.push_back(str.substr(start));
     return result;
@@ -115,11 +182,9 @@ std::vector<std::string_view> jasmine::string::split(std::string_view str, char 
 std::vector<std::string_view> jasmine::string::split(std::string_view str, std::string_view delimiter) {
     std::vector<std::string_view> result;
     auto start = 0uz;
-    auto end = str.find(delimiter);
-    while (end != std::string_view::npos) {
+    for (auto end = str.find(delimiter); end != std::string_view::npos; end = str.find(delimiter, start)) {
         result.push_back(str.substr(start, end - start));
         start = end + delimiter.size();
-        end = str.find(delimiter, start);
     }
     result.push_back(str.substr(start));
     return result;
@@ -140,7 +205,8 @@ std::vector<matjson::Value> jasmine::web::getArray(utils::web::WebResponse* resp
 }
 
 std::string jasmine::web::getString(utils::web::WebResponse* response) {
-    return std::string(std::from_range, response->data());
+    auto data = response->data();
+    return std::string(data.begin(), data.end());
 }
 
 ButtonHooker* ButtonHooker::create(CCMenuItem* button, CCObject* listener, SEL_MenuHandler selector) {

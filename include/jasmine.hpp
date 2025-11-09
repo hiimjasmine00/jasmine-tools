@@ -1,7 +1,11 @@
 #pragma once
+#include <jasmine/array.hpp>
 #include <jasmine/button.hpp>
 #include <jasmine/convert.hpp>
+#include <jasmine/gdps.hpp>
 #include <jasmine/hook.hpp>
+#include <jasmine/level.hpp>
+#include <jasmine/mod.hpp>
 #include <jasmine/nodes.hpp>
 #include <jasmine/random.hpp>
 #include <jasmine/search.hpp>

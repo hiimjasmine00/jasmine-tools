@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(jasmine-tools VERSION 1.0.1)
+project(jasmine-tools VERSION 1.1.0)
 
 add_library(jasmine-tools INTERFACE)
 
