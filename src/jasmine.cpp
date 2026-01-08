@@ -13,13 +13,14 @@ using namespace jasmine::button;
 using namespace jasmine::nodes;
 
 namespace jasmine::settings {
-    std::unordered_map<std::string, SettingV3*>* getSettings() {
-        static std::unordered_map<std::string, SettingV3*>* settings = [] {
-            auto settings = new std::unordered_map<std::string, SettingV3*>();
+    map::StringMap<SettingV3*>* getSettings() {
+        static map::StringMap<SettingV3*>* settings = [] {
+            auto settings = new map::StringMap<SettingV3*>();
             auto mod = Mod::get();
             auto manager = ModSettingsManager::from(mod);
-            for (auto& key : mod->getSettingKeys()) {
-                settings->emplace(std::move(key), manager->get(key).get());
+            auto keys = mod->getSettingKeys();
+            for (auto it = keys.begin(); it != keys.end(); it = keys.erase(it)) {
+                settings->emplace(std::move(*it), manager->get(*it).get());
             }
             return settings;
         }();
@@ -164,29 +165,25 @@ const char* jasmine::search::getKey(GJSearchObject* object) {
 
 SettingV3* jasmine::setting::getInternal(std::string_view key) {
     auto settings = jasmine::settings::getSettings();
-    if (auto it = settings->find(std::string(key)); it != settings->end()) return it->second;
+    if (auto it = settings->find(key); it != settings->end()) return it->second;
     return nullptr;
 }
 
 std::vector<std::string_view> jasmine::string::split(std::string_view str, char delimiter) {
     std::vector<std::string_view> result;
-    auto start = 0uz;
-    for (auto end = str.find(delimiter); end != std::string_view::npos; end = str.find(delimiter, start)) {
-        result.push_back(str.substr(start, end - start));
-        start = end + 1;
+    SplitCharIterator it(str, delimiter);
+    for (auto part : it) {
+        result.push_back(part);
     }
-    result.push_back(str.substr(start));
     return result;
 }
 
 std::vector<std::string_view> jasmine::string::split(std::string_view str, std::string_view delimiter) {
     std::vector<std::string_view> result;
-    auto start = 0uz;
-    for (auto end = str.find(delimiter); end != std::string_view::npos; end = str.find(delimiter, start)) {
-        result.push_back(str.substr(start, end - start));
-        start = end + delimiter.size();
+    SplitStringIterator it(str, delimiter);
+    for (auto part : it) {
+        result.push_back(part);
     }
-    result.push_back(str.substr(start));
     return result;
 }
 
@@ -206,7 +203,7 @@ std::vector<matjson::Value> jasmine::web::getArray(utils::web::WebResponse* resp
 
 std::string jasmine::web::getString(utils::web::WebResponse* response) {
     auto data = response->data();
-    return std::string(data.begin(), data.end());
+    return std::string(reinterpret_cast<const char*>(data.data()), data.size());
 }
 
 ButtonHooker* ButtonHooker::create(CCMenuItem* button, CCObject* listener, SEL_MenuHandler selector) {
