@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(jasmine-tools VERSION 1.3.0)
+project(jasmine-tools VERSION 1.3.1)
 
 add_library(jasmine-tools INTERFACE)
 
@@ -16,7 +16,7 @@ if (NOT TARGET fast_float)
         include(cmake/get_cpm.cmake)
     endif()
 
-    CPMAddPackage("gh:fastfloat/fast_float@8.2.1")
+    CPMAddPackage("gh:fastfloat/fast_float@8.2.2")
     target_link_libraries(jasmine-tools INTERFACE fast_float)
 endif()
 

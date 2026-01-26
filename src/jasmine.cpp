@@ -4,6 +4,7 @@
 #endif
 #include <Geode/loader/Mod.hpp>
 #include <Geode/loader/ModSettingsManager.hpp>
+#include <Geode/utils/StringMap.hpp>
 #include <jasmine.hpp>
 #include <random>
 #include <ranges>
@@ -13,9 +14,9 @@ using namespace jasmine::button;
 using namespace jasmine::nodes;
 
 namespace jasmine::settings {
-    map::StringMap<SettingV3*>* getSettings() {
-        static map::StringMap<SettingV3*>* settings = [] {
-            auto settings = new map::StringMap<SettingV3*>();
+    StringMap<SettingV3*>* getSettings() {
+        static StringMap<SettingV3*>* settings = [] {
+            auto settings = new StringMap<SettingV3*>();
             auto mod = Mod::get();
             auto manager = ModSettingsManager::from(mod);
             auto keys = mod->getSettingKeys();
@@ -37,7 +38,11 @@ struct GetCurrentServerEvent : Event {
 };
 
 std::string jasmine::gdps::getURL() {
+    #ifdef GEODE_IS_DESKTOP
+    static_assert(GEODE_COMP_GD_VERSION == 22081, "Incompatible GD version for jasmine::gdps::getURL");
+    #else
     static_assert(GEODE_COMP_GD_VERSION == 22074, "Incompatible GD version for jasmine::gdps::getURL");
+    #endif
 
     static std::string url = [] {
         if (Loader::get()->isModLoaded("km7dev.server_api")) {
@@ -51,9 +56,9 @@ std::string jasmine::gdps::getURL() {
         }
 
         return std::string(reinterpret_cast<const char*>(base::get() +
-            GEODE_WINDOWS(0x53ea48)
-            GEODE_ARM_MAC(0x7749fb)
-            GEODE_INTEL_MAC(0x8516bf)
+            GEODE_WINDOWS(0x558b70)
+            GEODE_ARM_MAC(0x77d709)
+            GEODE_INTEL_MAC(0x868df0)
             GEODE_ANDROID64((((GJMoreGamesLayer* volatile)nullptr)->getMoreGamesList()->count() > 0 ? 0xea2988 : 0xea27f8))
             GEODE_ANDROID32((((GJMoreGamesLayer* volatile)nullptr)->getMoreGamesList()->count() > 0 ? 0x952e9e : 0x952cce))
             GEODE_IOS(0x6af51a)
@@ -68,9 +73,9 @@ bool jasmine::gdps::isActive() {
 }
 
 Hook* jasmine::hook::createInternal(
-    uintptr_t address, std::string_view name, void* detour, const tulip::hook::HandlerMetadata& metadata, std::function<void(geode::Hook*)> preClaim
+    uintptr_t address, std::string name, void* detour, const tulip::hook::HandlerMetadata& metadata, Function<void(Hook*)> preClaim
 ) {
-    auto hook = Hook::create(reinterpret_cast<void*>(address), detour, std::string(name), metadata, {});
+    auto hook = Hook::create(reinterpret_cast<void*>(address), detour, std::move(name), metadata, {});
 
     if (preClaim) preClaim(hook.get());
 
@@ -82,7 +87,7 @@ Hook* jasmine::hook::createInternal(
     }
 }
 
-Hook* jasmine::hook::get(std::map<std::string, std::shared_ptr<Hook>>& hooks, std::string_view name, bool enabled) {
+Hook* jasmine::hook::get(StringMap<std::shared_ptr<Hook>>& hooks, std::string_view name, bool enabled) {
     if (hooks.empty()) return nullptr;
 
     auto it = hooks.find(std::string(name));
@@ -93,7 +98,7 @@ Hook* jasmine::hook::get(std::map<std::string, std::shared_ptr<Hook>>& hooks, st
     return hook;
 }
 
-void jasmine::hook::modify(std::map<std::string, std::shared_ptr<Hook>>& hooks, std::string_view key) {
+void jasmine::hook::modify(StringMap<std::shared_ptr<Hook>>& hooks, std::string_view key) {
     if (hooks.empty()) return;
 
     auto value = setting::getValue<bool>(key);
@@ -109,7 +114,7 @@ void jasmine::hook::modify(std::map<std::string, std::shared_ptr<Hook>>& hooks, 
     }, SettingChangedFilterV3(GEODE_MOD_ID, std::string(key)));
 }
 
-void jasmine::hook::modify(std::map<std::string, std::shared_ptr<Hook>>& hooks, std::string_view name, std::string_view key) {
+void jasmine::hook::modify(StringMap<std::shared_ptr<Hook>>& hooks, std::string_view name, std::string_view key) {
     auto hook = get(hooks, name, setting::getValue<bool>(key));
     if (!hook) return;
 

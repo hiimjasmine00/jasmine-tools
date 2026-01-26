@@ -5,7 +5,6 @@
 #include <jasmine/gdps.hpp>
 #include <jasmine/hook.hpp>
 #include <jasmine/level.hpp>
-#include <jasmine/map.hpp>
 #include <jasmine/mod.hpp>
 #include <jasmine/nodes.hpp>
 #include <jasmine/random.hpp>
