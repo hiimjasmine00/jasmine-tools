@@ -90,7 +90,7 @@ Hook* jasmine::hook::createInternal(
 Hook* jasmine::hook::get(StringMap<std::shared_ptr<Hook>>& hooks, std::string_view name, bool enabled) {
     if (hooks.empty()) return nullptr;
 
-    auto it = hooks.find(std::string(name));
+    auto it = hooks.find(name);
     if (it == hooks.end()) return nullptr;
 
     auto hook = it->second.get();
