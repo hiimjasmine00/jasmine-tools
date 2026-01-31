@@ -1,7 +1,4 @@
 #include <Geode/binding/GJGameLevel.hpp>
-#ifdef GEODE_IS_ANDROID
-#include <Geode/binding/GJMoreGamesLayer.hpp>
-#endif
 #include <Geode/loader/Mod.hpp>
 #include <Geode/loader/ModSettingsManager.hpp>
 #include <Geode/utils/StringMap.hpp>
@@ -29,23 +26,19 @@ namespace jasmine::settings {
     }
 }
 
-struct GetCurrentServerEvent : Event {
+/*struct GetCurrentServerEvent : Event {
     GetCurrentServerEvent() {}
 
     int m_id = 0;
     std::string m_url;
     int m_prio = 0;
-};
+};*/
 
 std::string jasmine::gdps::getURL() {
-    #ifdef GEODE_IS_DESKTOP
     static_assert(GEODE_COMP_GD_VERSION == 22081, "Incompatible GD version for jasmine::gdps::getURL");
-    #else
-    static_assert(GEODE_COMP_GD_VERSION == 22074, "Incompatible GD version for jasmine::gdps::getURL");
-    #endif
 
     static std::string url = [] {
-        if (Loader::get()->isModLoaded("km7dev.server_api")) {
+        /*if (Loader::get()->isModLoaded("km7dev.server_api")) {
             GetCurrentServerEvent event;
             event.post();
             auto url = std::move(event.m_url);
@@ -53,15 +46,15 @@ std::string jasmine::gdps::getURL() {
                 while (url.ends_with('/')) url = url.substr(0, url.size() - 1);
                 return url;
             }
-        }
+        }*/
 
         return std::string(reinterpret_cast<const char*>(base::get() +
             GEODE_WINDOWS(0x558b70)
             GEODE_ARM_MAC(0x77d709)
             GEODE_INTEL_MAC(0x868df0)
-            GEODE_ANDROID64((((GJMoreGamesLayer* volatile)nullptr)->getMoreGamesList()->count() > 0 ? 0xea2988 : 0xea27f8))
-            GEODE_ANDROID32((((GJMoreGamesLayer* volatile)nullptr)->getMoreGamesList()->count() > 0 ? 0x952e9e : 0x952cce))
-            GEODE_IOS(0x6af51a)
+            GEODE_ANDROID64(0xfccf90)
+            GEODE_ANDROID32(0x97c0db)
+            GEODE_IOS(0x6b8cc2)
         ), 0, 34);
     }();
     return url;
@@ -106,22 +99,21 @@ void jasmine::hook::modify(StringMap<std::shared_ptr<Hook>>& hooks, std::string_
         hook->setAutoEnable(value);
     }
 
-    new EventListener([hooks](std::shared_ptr<SettingV3> setting) {
+    SettingChangedEventV3(GEODE_MOD_ID, std::string(key)).listen([&hooks](std::shared_ptr<SettingV3> setting) {
         auto value = std::static_pointer_cast<BoolSettingV3>(std::move(setting))->getValue();
         for (auto& hook : std::views::values(hooks)) {
             toggle(hook.get(), value);
         }
-    }, SettingChangedFilterV3(GEODE_MOD_ID, std::string(key)));
+    }).leak();
 }
 
 void jasmine::hook::modify(StringMap<std::shared_ptr<Hook>>& hooks, std::string_view name, std::string_view key) {
     auto hook = get(hooks, name, setting::getValue<bool>(key));
     if (!hook) return;
 
-    new EventListener([hook](std::shared_ptr<SettingV3> setting) {
-        auto value = std::static_pointer_cast<BoolSettingV3>(std::move(setting))->getValue();
-        toggle(hook, value);
-    }, SettingChangedFilterV3(GEODE_MOD_ID, std::string(key)));
+    SettingChangedEventV3(GEODE_MOD_ID, std::string(key)).listen([hook](std::shared_ptr<SettingV3> setting) {
+        toggle(hook, std::static_pointer_cast<BoolSettingV3>(std::move(setting))->getValue());
+    }).leak();
 }
 
 void jasmine::hook::toggle(Hook* hook, bool enable) {
