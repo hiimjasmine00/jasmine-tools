@@ -3,7 +3,6 @@
 #include <Geode/loader/ModSettingsManager.hpp>
 #include <Geode/utils/StringMap.hpp>
 #include <jasmine.hpp>
-#include <random>
 #include <ranges>
 
 using namespace geode::prelude;
@@ -146,15 +145,6 @@ double jasmine::random::get(double min, double max) {
     return get() * (max - min) + min;
 }
 
-bool jasmine::random::getBool() {
-    return getInt(0, 1) == 1;
-}
-
-int jasmine::random::getInt(int min, int max) {
-    static std::mt19937 rng(std::random_device{}());
-    return std::uniform_int_distribution<int>(min, max)(rng);
-}
-
 const char* jasmine::search::getKey(GJSearchObject* object) {
     std::string_view key = object->getKey();
     return key.data() + (key.size() > 256uz ? key.size() - 256uz : 0uz);
@@ -184,22 +174,26 @@ std::vector<std::string_view> jasmine::string::split(std::string_view str, std::
     return result;
 }
 
-std::vector<matjson::Value> jasmine::web::getArray(utils::web::WebResponse* response, std::string_view key) {
-    if (auto json = response->json()) {
+std::vector<matjson::Value> jasmine::web::getArray(utils::web::WebResponse& response, std::string_view key) {
+    if (auto json = response.json()) {
         if (key.data()) {
             if (auto obj = json.unwrap().get(key)) {
-                if (auto arr = std::move(obj.unwrap()).asArray()) return std::move(arr).unwrap();
+                if (auto arr = std::move(obj.unwrap()).asArray()) {
+                    return std::move(arr).unwrap();
+                }
             }
         }
         else {
-            if (auto arr = std::move(json).unwrap().asArray()) return std::move(arr).unwrap();
+            if (auto arr = std::move(json).unwrap().asArray()) {
+                return std::move(arr).unwrap();
+            }
         }
     }
     return {};
 }
 
-std::string jasmine::web::getString(utils::web::WebResponse* response) {
-    auto data = response->data();
+std::string jasmine::web::getString(utils::web::WebResponse& response) {
+    auto& data = response.data();
     return std::string(reinterpret_cast<const char*>(data.data()), data.size());
 }
 

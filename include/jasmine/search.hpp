@@ -1,17 +1,18 @@
 #pragma once
 #include <Geode/binding/GJSearchObject.hpp>
+#include <Geode/utils/StringBuffer.hpp>
 
 namespace jasmine::search {
     template <std::input_iterator It, std::sentinel_for<It> Sent, class Func = std::identity>
     requires std::is_invocable_r_v<std::string, Func, typename std::iterator_traits<It>::value_type>
     GJSearchObject* getObject(It begin, Sent end, Func func = {}) {
         auto obj = GJSearchObject::create(SearchType::Type19);
-        fmt::memory_buffer searchQuery;
+        geode::utils::StringBuffer searchQuery;
         for (auto it = begin; it < end; ++it) {
-            if (it != begin) searchQuery.push_back(',');
-            fmt::format_to(std::back_inserter(searchQuery), "{}", std::invoke(func, *it));
+            if (it != begin) searchQuery.append(',');
+            searchQuery.append(std::invoke(func, *it));
         }
-        obj->m_searchQuery = fmt::to_string(searchQuery);
+        obj->m_searchQuery = searchQuery.str();
         return obj;
     }
 
