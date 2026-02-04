@@ -16,7 +16,7 @@ if (NOT TARGET fast_float)
         include(cmake/get_cpm.cmake)
     endif()
 
-    CPMAddPackage("gh:fastfloat/fast_float@8.2.2")
+    CPMAddPackage("gh:fastfloat/fast_float@8.2.3")
     target_link_libraries(jasmine-tools INTERFACE fast_float)
 endif()
 
