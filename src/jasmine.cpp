@@ -174,7 +174,7 @@ std::vector<std::string_view> jasmine::string::split(std::string_view str, std::
     return result;
 }
 
-std::vector<matjson::Value> jasmine::web::getArray(utils::web::WebResponse& response, std::string_view key) {
+std::vector<matjson::Value> jasmine::web::getArray(const utils::web::WebResponse& response, std::string_view key) {
     if (auto json = response.json()) {
         if (key.data()) {
             if (auto obj = json.unwrap().get(key)) {
@@ -192,7 +192,7 @@ std::vector<matjson::Value> jasmine::web::getArray(utils::web::WebResponse& resp
     return {};
 }
 
-std::string jasmine::web::getString(utils::web::WebResponse& response) {
+std::string jasmine::web::getString(const utils::web::WebResponse& response) {
     auto& data = response.data();
     return std::string(reinterpret_cast<const char*>(data.data()), data.size());
 }
