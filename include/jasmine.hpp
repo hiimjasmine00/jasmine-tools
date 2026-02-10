@@ -1,7 +1,5 @@
 #pragma once
-#include <jasmine/array.hpp>
 #include <jasmine/button.hpp>
-#include <jasmine/convert.hpp>
 #include <jasmine/gdps.hpp>
 #include <jasmine/hook.hpp>
 #include <jasmine/level.hpp>

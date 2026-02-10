@@ -1,10 +1,10 @@
 #pragma once
-#include <Geode/utils/cocos.hpp>
+#include <cocos2d.h>
 
 namespace jasmine::nodes {
     class TableNode : public cocos2d::CCLayer {
     protected:
-        geode::Ref<cocos2d::CCArray> m_menus;
+        std::vector<cocos2d::CCMenu*> m_menus;
         int m_columns;
         int m_buttons;
 

@@ -1,4 +1,5 @@
 #include <Geode/binding/GJGameLevel.hpp>
+#include <Geode/loader/Dispatch.hpp>
 #include <Geode/loader/Mod.hpp>
 #include <Geode/loader/ModSettingsManager.hpp>
 #include <Geode/utils/StringMap.hpp>
@@ -25,27 +26,27 @@ namespace jasmine::settings {
     }
 }
 
-/*struct GetCurrentServerEvent : Event {
-    GetCurrentServerEvent() {}
+namespace ServerAPIEvents {
+    struct Server {
+        int id;
+        std::string url;
+        int priority;
+    };
 
-    int m_id = 0;
-    std::string m_url;
-    int m_prio = 0;
-};*/
+    inline Server getCurrentServer() GEODE_EVENT_EXPORT_CALL_NORES(&getCurrentServer, (), "km7dev.server_api/getCurrentServer");
+}
 
 std::string jasmine::gdps::getURL() {
     static_assert(GEODE_COMP_GD_VERSION == 22081, "Incompatible GD version for jasmine::gdps::getURL");
 
     static std::string url = [] {
-        /*if (Loader::get()->isModLoaded("km7dev.server_api")) {
-            GetCurrentServerEvent event;
-            event.post();
-            auto url = std::move(event.m_url);
+        if (Loader::get()->isModLoaded("km7dev.server_api")) {
+            auto url = std::move(ServerAPIEvents::getCurrentServer().url);
             if (!url.empty() && url != "NONE_REGISTERED") {
                 while (url.ends_with('/')) url = url.substr(0, url.size() - 1);
                 return url;
             }
-        }*/
+        }
 
         return std::string(reinterpret_cast<const char*>(base::get() +
             GEODE_WINDOWS(0x558b70)
@@ -60,7 +61,7 @@ std::string jasmine::gdps::getURL() {
 }
 
 bool jasmine::gdps::isActive() {
-    static bool isActive = getURL().rfind("://www.boomlings.com/database") != std::string::npos;
+    static bool isActive = getURL().rfind("://www.boomlings.com/database") == std::string::npos;
     return isActive;
 }
 
@@ -156,24 +157,6 @@ SettingV3* jasmine::setting::getInternal(std::string_view key) {
     return nullptr;
 }
 
-std::vector<std::string_view> jasmine::string::split(std::string_view str, char delimiter) {
-    std::vector<std::string_view> result;
-    SplitCharIterator it(str, delimiter);
-    for (auto part : it) {
-        result.push_back(part);
-    }
-    return result;
-}
-
-std::vector<std::string_view> jasmine::string::split(std::string_view str, std::string_view delimiter) {
-    std::vector<std::string_view> result;
-    SplitStringIterator it(str, delimiter);
-    for (auto part : it) {
-        result.push_back(part);
-    }
-    return result;
-}
-
 std::vector<matjson::Value> jasmine::web::getArray(const utils::web::WebResponse& response, std::string_view key) {
     if (auto json = response.json()) {
         if (key.data()) {
@@ -230,7 +213,7 @@ bool TableNode::init(int columns, int rows, float width, float height, std::stri
     ignoreAnchorPointForPosition(false);
     setContentSize({ width, height });
 
-    m_menus = CCArray::create();
+    m_menus.reserve(rows);
     m_columns = columns;
 
     for (int i = 0; i < rows; i++) {
@@ -239,7 +222,7 @@ bool TableNode::init(int columns, int rows, float width, float height, std::stri
         menu->setLayout(RowLayout::create()->setAxisAlignment(AxisAlignment::Even));
         menu->setID(fmt::format("{}-{}", prefix, i + 1));
         addChild(menu);
-        m_menus->addObject(menu);
+        m_menus.push_back(menu);
     }
 
     setLayout(ColumnLayout::create()->setAxisReverse(true));
@@ -248,11 +231,11 @@ bool TableNode::init(int columns, int rows, float width, float height, std::stri
 }
 
 void TableNode::addButton(CCMenuItem* button) {
-    if (button) static_cast<CCNode*>(m_menus->objectAtIndex(m_buttons++ / m_columns))->addChild(button);
+    if (button) m_menus[m_buttons++ / m_columns]->addChild(button);
 }
 
 void TableNode::updateAllLayouts() {
-    for (auto menu : CCArrayExt<CCNode*>(m_menus)) {
+    for (auto menu : m_menus) {
         menu->updateLayout();
     }
     updateLayout();
