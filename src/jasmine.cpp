@@ -52,8 +52,8 @@ std::string jasmine::gdps::getURL() {
             GEODE_WINDOWS(0x558b70)
             GEODE_ARM_MAC(0x77d709)
             GEODE_INTEL_MAC(0x868df0)
-            GEODE_ANDROID64(0xfccf90)
-            GEODE_ANDROID32(0x97c0db)
+            GEODE_ANDROID64(0xeccf90)
+            GEODE_ANDROID32(0x96c0db)
             GEODE_IOS(0x6b8cc2)
         ), 0, 34);
     }();
