@@ -99,7 +99,7 @@ void jasmine::hook::modify(StringMap<std::shared_ptr<Hook>>& hooks, std::string_
         hook->setAutoEnable(value);
     }
 
-    SettingChangedEventV3(GEODE_MOD_ID, std::string(key)).listen([&hooks](std::shared_ptr<SettingV3> setting) {
+    SettingChangedEventV3(GEODE_MOD_ID, std::string(key)).listen([hooks](std::shared_ptr<SettingV3> setting) {
         auto value = std::static_pointer_cast<BoolSettingV3>(std::move(setting))->getValue();
         for (auto& hook : std::views::values(hooks)) {
             toggle(hook.get(), value);
