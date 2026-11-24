@@ -26,18 +26,19 @@ namespace jasmine::settings {
     }
 }
 
-namespace ServerAPIEvents {
+class ServerAPIEvents {
+public:
     struct Server {
         int id;
         std::string url;
         int priority;
     };
 
-    inline Server getCurrentServer() GEODE_EVENT_EXPORT_CALL_NORES(&getCurrentServer, (), "km7dev.server_api/getCurrentServer");
-}
+    GEODE_EVENT_EXPORT_CALL(Server, getCurrentServer, (), (), "km7dev.server_api/getCurrentServer");
+};
 
 std::string jasmine::gdps::getURL() {
-    static_assert(GEODE_COMP_GD_VERSION == 22081, "Incompatible GD version for jasmine::gdps::getURL");
+    static_assert(GEODE_COMP_GD_VERSION == 22091, "Incompatible GD version for jasmine::gdps::getURL");
 
     static std::string url = [] {
         if (Loader::get()->isModLoaded("km7dev.server_api")) {
@@ -49,12 +50,12 @@ std::string jasmine::gdps::getURL() {
         }
 
         return std::string(reinterpret_cast<const char*>(base::get() +
-            GEODE_WINDOWS(0x558b70)
-            GEODE_ARM_MAC(0x77d709)
-            GEODE_INTEL_MAC(0x868df0)
-            GEODE_ANDROID64(0xeccf90)
-            GEODE_ANDROID32(0x96c0db)
-            GEODE_IOS(0x6b8cc2)
+            GEODE_WINDOWS(0x757cd8)
+            GEODE_ARM_MAC(0x945f43)
+            GEODE_INTEL_MAC(0xa5ba79)
+            GEODE_ANDROID64(0x11498a0)
+            GEODE_ANDROID32(0xb9f4cb)
+            GEODE_IOS(0x7f0f12)
         ), 0, 34);
     }();
     return url;

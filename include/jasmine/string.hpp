@@ -1,12 +1,5 @@
 #pragma once
-#include <Geode/platform/cplatform.h>
 #include <string_view>
-
-#ifdef GEODE_IS_ANDROID
-#define JASMINE_STRING(...) std::string(__VA_ARGS__)
-#else
-#define JASMINE_STRING(...) __VA_ARGS__
-#endif
 
 namespace jasmine::string {
     struct SplitIterator {
