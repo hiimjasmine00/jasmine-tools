@@ -1,7 +1,7 @@
 #pragma once
-#include <cocos2d.h>
 #include <Geode/loader/Tulip.hpp>
 #include <Geode/loader/Types.hpp>
+#include <Geode/utils/function.hpp>
 #include <Geode/utils/StringMap.hpp>
 
 namespace jasmine::hook {
